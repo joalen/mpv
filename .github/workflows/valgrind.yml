@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
 
     steps:
       - name: Check out repository
@@ -21,7 +21,7 @@ jobs:
         if: runner.os == 'Linux'
         run: | 
           sudo apt-get update
-          sudo apt-get install -y libavcodec-dev, libavfilter-dev libass-dev libx11-xcb-dev libx11-xcb1 libxrandr2 libxrandr-dev libxpresent-dev libxpresent1 libvdpau-dev libvdpau1 libgl-dev libgl1 libglx-dev libglx0 libegl-dev libegl1 libxcb-xv0 libxcb-xv0-dev libpulse-dev libpulse0 
+          sudo apt-get install -y libavcodec58, libavcodec-dev, libavfilter-dev libass-dev libx11-xcb-dev libx11-xcb1 libxrandr2 libxrandr-dev libxpresent-dev libxpresent1 libvdpau-dev libvdpau1 libgl-dev libgl1 libglx-dev libglx0 libegl-dev libegl1 libxcb-xv0 libxcb-xv0-dev libpulse-dev libpulse0 
           sudo apt-get install -y libavutil-dev libavutil56 libavcodec-dev libavcodec58 libavformat-dev libavformat58 libswscale-dev libswscale5 libswresample-dev libswresample3
           sudo apt-get install -y libghc-gi-harfbuzz-dev libghc-gi-harfbuzz-prof libfribidi-dev libfribidi0 libfreetype-dev libfreetype6 libfontconfig-dev libfontconfig1 yasm
           mkdir -p subprojects
