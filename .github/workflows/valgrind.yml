@@ -22,7 +22,7 @@ jobs:
         run: | 
           sudo apt-get update
           sudo apt-get install -y libavfilter-dev libass-dev libx11-xcb-dev libx11-xcb1 libxrandr2 libxrandr-dev libxpresent-dev libxpresent1 libvdpau-dev libvdpau1 libgl-dev libgl1 libglx-dev libglx0 libegl-dev libegl1 libxcb-xv0 libxcb-xv0-dev libpulse-dev libpulse0 
-          sudo apt-get install -y libghc-gi-harfbuzz-dev libghc-gi-harfbuzz-prof libfribidi-dev libfribidi0 libfreetype-dev libfreetype6 libfontconfig-dev libfontconfig1 yasm
+          sudo apt-get install -y libghc-gi-harfbuzz-dev libghc-gi-harfbuzz-prof libfribidi-dev libfribidi0 libfreetype-dev libfreetype6 libfontconfig-dev libfontconfig1 yasm meson
           mkdir -p subprojects
           git clone https://code.videolan.org/videolan/libplacebo.git --depth=1 --recursive subprojects/libplacebo
 
