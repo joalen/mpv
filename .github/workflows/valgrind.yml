@@ -1,0 +1,103 @@
+name: Run Valgrind
+
+on:
+  push:
+
+jobs:
+  run-valgrind:
+    name: '${{ matrix.os }}'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2 
+        with:
+          ref: 3fa09458daf94e1a463b9eb6bd0271476c5b4263
+
+      - name: Install dependencies for project (Linux)
+        if: runner.os == 'Linux'
+        run: | 
+          sudo apt-get update
+          sudo apt-get install -y libavcodec-dev, libavfilter-dev libass-dev libx11-xcb-dev libx11-xcb1 libxrandr2 libxrandr-dev libxpresent-dev libxpresent1 libvdpau-dev libvdpau1 libgl-dev libgl1 libglx-dev libglx0 libegl-dev libegl1 libxcb-xv0 libxcb-xv0-dev libpulse-dev libpulse0 
+          sudo apt-get install -y libavutil-dev libavutil56 libavcodec-dev libavcodec58 libavformat-dev libavformat58 libswscale-dev libswscale5 libswresample-dev libswresample3
+          sudo apt-get install -y libghc-gi-harfbuzz-dev libghc-gi-harfbuzz-prof libfribidi-dev libfribidi0 libfreetype-dev libfreetype6 libfontconfig-dev libfontconfig1 yasm
+          mkdir -p subprojects
+          git clone https://code.videolan.org/videolan/libplacebo.git --depth=1 --recursive subprojects/libplacebo
+
+      - name: Build repository 
+        run: | 
+          meson setup build
+          meson compile -C build
+
+      - name: Install Valgrind
+        if: runner.os == 'Linux'
+        run: | 
+          sudo apt-get update
+          sudo apt-get install -y valgrind
+      
+      - name: Run Valgrind
+        run: |
+          #!/bin/bash
+          set +e 
+
+          echo "<----------------------Start Valgrind Service---------------------->"
+          
+          is_executable() {
+            local file="$1"
+            if file "$file" | grep -q 'ELF 64-bit'; then
+              return 0
+            else
+              return 1
+            fi
+          }
+
+          run_with_valgrind() {
+            local executable="$1"
+            local tool="$2"
+            local tool_name="$3"
+            local valgrind_options="--read-inline-info=yes --trace-children=yes -v -v"
+
+            if [ "$tool" == "memcheck" ]; then
+              valgrind_options+=" --leak-check=full --show-leak-kinds=all --track-origins=yes"
+            fi
+
+            timeout 60s valgrind --tool="$tool" $valgrind_options "$executable"
+            local exit_status=$?
+
+            if [ $exit_status -eq 124 ]; then
+              return
+            elif [ $exit_status -ne 0 ]; then
+              ((success += 1))
+            else
+              ((fails += 1))
+            fi
+          }
+
+          tools=(
+            "memcheck Memcheck"
+            "cachegrind Cachegrind"
+            "callgrind Callgrind"
+            "helgrind Helgrind"
+            "drd DRD"
+            "massif Massif"
+            "dhat DHAT"
+            "lackey Lackey"
+            "none None"
+            "exp-bbv exp-bbv"
+          )
+
+          find . -type f -executable | while read -r file; do
+            if is_executable "$file"; then
+              for tool_info in "${tools[@]}"; do
+                tool=(${tool_info})
+                echo "" 
+                echo "" 
+                echo ""
+                echo "========Valgrind tool: ${tool[1]}========"
+                run_with_valgrind "$file" "${tool[0]}" "${tool[1]}"
+              done
+            fi
+          done
